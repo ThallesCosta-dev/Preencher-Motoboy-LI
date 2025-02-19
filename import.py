@@ -13,6 +13,9 @@ import pyautogui
 # Variável global para controlar pausa
 pausado = False
 
+# Variável global para controlar o modo
+IS_HEADLESS = False
+
 def toggle_pausa(e):
     global pausado
     pausado = not pausado
@@ -22,6 +25,23 @@ def toggle_pausa(e):
 load_dotenv()
 
 def preencher_faixas_cep():
+    modo = input("Escolha o modo de execução (1 para normal, 2 para minimizado): ")
+    
+    # Configurações do Chrome
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    if modo == "2":
+        print("Executando em modo minimizado...")
+        chrome_options.add_argument('--window-position=-32000,-32000')  # Move a janela para fora da tela
+    else:
+        print("Executando em modo normal...")
+        chrome_options.add_argument('--start-maximized')
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    
     # Registrar o atalho de teclado 'p' para pausar/despausar
     keyboard.on_press_key('p', toggle_pausa)
     
@@ -39,9 +59,6 @@ def preencher_faixas_cep():
         
     # Ler a planilha Excel
     df = pd.read_excel(caminho_arquivo)
-    
-    # Inicializar o navegador
-    driver = webdriver.Chrome()
     
     # Maximizar a janela do navegador
     driver.maximize_window()
@@ -103,7 +120,7 @@ def preencher_faixas_cep():
         driver.execute_script("window.scrollBy(0, 300);")  # Rolagem inicial mais curta (300 pixels)
         time.sleep(2)
         
-        index = 2019  # Começar do índice desejado
+        index = 6453  # Começar do índice desejado
         while index < len(df):
             try:
                 row = df.iloc[index]
@@ -125,6 +142,9 @@ def preencher_faixas_cep():
                 # Verificar se está pausado
                 while pausado:
                     time.sleep(1)
+                
+                driver.execute_script("window.scrollBy(0, 300);")  # Rolagem inicial mais curta (300 pixels)
+                time.sleep(2)
                 
                 # Preencher os dados
                 regiao = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[placeholder='Ex.: São Paulo Capital']")))
