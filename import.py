@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import os
 import keyboard  # Precisamos instalar: pip install keyboard
 import pyautogui
+import warnings
 
 # Variável global para controlar pausa
 pausado = False
@@ -25,6 +26,9 @@ def toggle_pausa(e):
 load_dotenv()
 
 def preencher_faixas_cep():
+    # Suprimir mensagens de warning
+    warnings.filterwarnings("ignore")
+    
     modo = input("Escolha o modo de execução (1 para normal, 2 para minimizado): ")
     
     # Configurações do Chrome
@@ -32,10 +36,15 @@ def preencher_faixas_cep():
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-software-rasterizer')
+    chrome_options.add_argument('--disable-features=VizDisplayCompositor')
+    chrome_options.add_argument('--log-level=3')
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging', 'enable-automation'])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
     
     if modo == "2":
         print("Executando em modo minimizado...")
-        chrome_options.add_argument('--window-position=-32000,-32000')  # Move a janela para fora da tela
+        chrome_options.add_argument('--window-state=minimized')
     else:
         print("Executando em modo normal...")
         chrome_options.add_argument('--start-maximized')
